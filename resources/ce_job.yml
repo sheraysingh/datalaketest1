@@ -1,7 +1,7 @@
 resources:
   jobs:
     ce_medallion:
-      name: ce_medallion
+      name: ce_medallion_${bundle.target}
       parameters:
         - name: catalog
           default: ${var.catalog}
