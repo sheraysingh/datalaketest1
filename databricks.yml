@@ -1,0 +1,23 @@
+bundle:
+  name: ce
+
+include:
+  - resources/*.yml
+
+variables:
+  catalog:
+    default: ce_ctg_dev
+
+targets:
+  dev:
+    default: true
+    workspace:
+      root_path: /Workspace/ce_dev
+    variables:
+      catalog: ce_ctg_dev
+
+  uat:
+    workspace:
+      root_path: /Workspace/ce_uat
+    variables:
+      catalog: ce_ctg_uat

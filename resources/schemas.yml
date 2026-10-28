@@ -1,0 +1,14 @@
+resources:
+  schemas:
+    ce_landing:
+      catalog_name: ${var.catalog}
+      name: ce_landing
+    ce_bronze:
+      catalog_name: ${var.catalog}
+      name: ce_bronze
+    ce_silver:
+      catalog_name: ${var.catalog}
+      name: ce_silver
+    ce_gold:
+      catalog_name: ${var.catalog}
+      name: ce_gold
