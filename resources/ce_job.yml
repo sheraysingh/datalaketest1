@@ -1,0 +1,27 @@
+resources:
+  jobs:
+    ce_medallion:
+      name: ce_medallion
+      parameters:
+        - name: catalog
+          default: ${var.catalog}
+      tasks:
+        - task_key: landing
+          notebook_task:
+            notebook_path: ../src/Landing/Sales_Landing_Generate.py
+        - task_key: bronze
+          depends_on: [{task_key: landing}]
+          notebook_task:
+            notebook_path: ../src/Bronze/Sales_Full_Ingestion.py
+        - task_key: silver
+          depends_on: [{task_key: bronze}]
+          notebook_task:
+            notebook_path: ../src/Silver/Sales_Transform.py
+        - task_key: gold
+          depends_on: [{task_key: silver}]
+          notebook_task:
+            notebook_path: ../src/Gold/Sales_By_Region.py
+        - task_key: security
+          depends_on: [{task_key: gold}]
+          notebook_task:
+            notebook_path: ../src/Security/Grants.py
