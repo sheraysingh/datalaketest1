@@ -1,0 +1,7 @@
+resources:
+  volumes:
+    ce_raw:
+      catalog_name: ${var.catalog}
+      schema_name: ${resources.schemas.ce_landing.name}
+      name: raw
+      volume_type: MANAGED
