@@ -1,32 +1,49 @@
 name: CE bundle CI/CD
-
 on:
   pull_request:
-    branches: [dev, uat]
+    branches: [dev, uat, main]
   push:
-    branches: [dev, uat]
+    branches: [dev, uat, main]
 
 jobs:
-  validate:
+  check-source:
     if: github.event_name == 'pull_request'
     runs-on: ubuntu-latest
-    environment: ${{ github.base_ref }}
     env:
+      BASE: ${{ github.base_ref }}
+      HEAD: ${{ github.head_ref }}
+    steps:
+      - run: |
+          case "$BASE" in
+            dev)  [[ "$HEAD" == feature/* ]] || { echo "Only feature/* can merge into dev"; exit 1; } ;;
+            uat)  [[ "$HEAD" == "dev" ]]     || { echo "Only dev can merge into uat"; exit 1; } ;;
+            main) [[ "$HEAD" == "uat" ]]     || { echo "Only uat can merge into main"; exit 1; } ;;
+          esac
+
+  validate:
+    if: github.event_name == 'pull_request'
+    needs: check-source
+    runs-on: ubuntu-latest
+    environment: ${{ github.base_ref == 'main' && 'prod' || github.base_ref }}-validate
+    env:
+      TARGET: ${{ github.base_ref == 'main' && 'prod' || github.base_ref }}
       DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
       DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
     steps:
       - uses: actions/checkout@v5
       - uses: databricks/setup-cli@main
-      - run: databricks bundle validate -t ${{ github.base_ref }}
+      - run: databricks bundle validate -t "$TARGET"
 
   deploy:
     if: github.event_name == 'push'
     runs-on: ubuntu-latest
-    environment: ${{ github.ref_name }}
+    environment: ${{ github.ref_name == 'main' && 'prod' || github.ref_name }}
     env:
+      TARGET: ${{ github.ref_name == 'main' && 'prod' || github.ref_name }}
       DATABRICKS_HOST: ${{ secrets.DATABRICKS_HOST }}
       DATABRICKS_TOKEN: ${{ secrets.DATABRICKS_TOKEN }}
     steps:
-      - uses: actions/checkout@v4
+      - uses: actions/checkout@v5
       - uses: databricks/setup-cli@main
-      - run: databricks bundle deploy -t ${{ github.ref_name }}
+      - run: databricks bundle validate -t "$TARGET"
+      - run: databricks bundle deploy -t "$TARGET"
